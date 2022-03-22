@@ -22,7 +22,18 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <ImageButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        app:maxImageSize="@dimen/_40sdp"
+        app:fabSize="auto"
+        android:backgroundTint="#25D366"
+        android:foregroundTint="@color/white"
+        android:src="@mipmap/ic_whatsapp_foreground"/>
+
+    <!--<ImageButton
         android:id="@+id/fab"
         android:layout_width="@dimen/_40sdp"
         android:layout_height="@dimen/_40sdp"
@@ -30,7 +41,7 @@
         android:layout_marginEnd="@dimen/_20sdp"
         android:layout_marginTop="@dimen/_2sdp"
         android:elevation="@dimen/_10sdp"
-        android:src="@mipmap/ic_launcher_round"/>
+        android:src="@mipmap/ic_whatsapp"/>-->
 
     <include
         android:id="@+id/contentMain"
