@@ -4,24 +4,31 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/untitled_design"
     tools:context=".SplashActivity">
 
     <ImageView
         android:id="@+id/imageView2"
-        android:layout_width="wrap_content"
-        android:layout_height="150dp"
-        android:src="@mipmap/ic_launcher"
+        android:layout_width="189dp"
+        android:layout_height="201dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/logoputih"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="10:10"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
+        android:id="@+id/tv_splash"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/calligraffitti"
+        android:paddingTop="@dimen/_10sdp"
         android:text="@string/splash_text"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_15sdp"
         android:textStyle="bold"
-        android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView2" />

@@ -8,11 +8,13 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.KeyEvent
 import android.view.View
 import android.webkit.*
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.ui.AppBarConfiguration
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.greenTangerangkota.banksampahdlh.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -22,6 +24,7 @@ class MainActivity : AppCompatActivity() {
     private val url = "https://green.tangerangkota.go.id/banksampahdroid/"
     private var currentUrl = ""
     private val FILECHOOSER_RESULTCODE = 190
+
     //private var mInterstitialAd: InterstitialAd? = null
     //private var interAdRequest: AdRequest? = null
     private var progressDialog: ProgressDialog? = null
@@ -42,6 +45,8 @@ class MainActivity : AppCompatActivity() {
         progressDialog = ProgressDialog(this)
         progressDialog?.setMessage("Sedang Loading...")
 
+
+
         binding.fab.setOnClickListener {
 
             sendWhatsappMessage(
@@ -59,44 +64,70 @@ class MainActivity : AppCompatActivity() {
             if (progressDialog != null && progressDialog?.isShowing == true)
                 progressDialog?.dismiss()
         }
+
+
     }
 
+    //backpressed on webview not quit call
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK && binding.contentMain.webView.canGoBack()) {
+            binding.contentMain.webView.goBack()
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+//    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+//        if (event?.action == KeyEvent.ACTION_DOWN) {
+//            when (keyCode) {
+//                KeyEvent.KEYCODE_BACK -> if (binding.contentMain.webView.canGoBack()) {
+//                    binding.contentMain.webView.goBack()
+//                } else {
+//                    finish()
+//                }
+//            }
+//            return true
+//        }
+//        return super.onKeyDown(keyCode, event)
+//    }
+
+
     /** private fun loadInterAds() {
-        var interAdRequest = AdRequest.Builder().build()
+    var interAdRequest = AdRequest.Builder().build()
 
-        InterstitialAd.load(
-            this, getString(R.string.interstitial_full_screen), interAdRequest,
-            object : InterstitialAdLoadCallback() {
-                override fun onAdFailedToLoad(adError: LoadAdError) {
-                    mInterstitialAd = null
-                    mAdIsLoading = false
-                }
+    InterstitialAd.load(
+    this, getString(R.string.interstitial_full_screen), interAdRequest,
+    object : InterstitialAdLoadCallback() {
+    override fun onAdFailedToLoad(adError: LoadAdError) {
+    mInterstitialAd = null
+    mAdIsLoading = false
+    }
 
-                override fun onAdLoaded(interstitialAd: InterstitialAd) {
-                    mInterstitialAd = interstitialAd
-                    mAdIsLoading = false
-                }
-            }
-        )
+    override fun onAdLoaded(interstitialAd: InterstitialAd) {
+    mInterstitialAd = interstitialAd
+    mAdIsLoading = false
+    }
+    }
+    )
     }
 
     private fun showInterAds(url: String) {
-        if (mInterstitialAd != null) {
-            mInterstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
-                override fun onAdDismissedFullScreenContent() {
-                    binding.contentMain.webView.loadUrl(url)
-                    loadInterAds()
-                }
+    if (mInterstitialAd != null) {
+    mInterstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+    override fun onAdDismissedFullScreenContent() {
+    binding.contentMain.webView.loadUrl(url)
+    loadInterAds()
+    }
 
-                override fun onAdFailedToShowFullScreenContent(adError: AdError?) {
+    override fun onAdFailedToShowFullScreenContent(adError: AdError?) {
 
-                }
+    }
 
-                override fun onAdShowedFullScreenContent() {
-                    mInterstitialAd = null;
-                }
-            }
-            mInterstitialAd?.show(this)
+    override fun onAdShowedFullScreenContent() {
+    mInterstitialAd = null;
+    }
+    }
+    mInterstitialAd?.show(this)
         } else {
             binding.contentMain.webView.loadUrl(url)
         }
@@ -117,7 +148,15 @@ class MainActivity : AppCompatActivity() {
 //                return true
 //            }
 
+            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                if (url != null) {
+                    view?.loadUrl(url)
+                }
+                return true
+            }
+
             override fun onPageFinished(view: WebView?, url: String?) {
+
                 try {
                     if (progressDialog!!.isShowing) {
                         progressDialog!!.dismiss()
@@ -157,8 +196,13 @@ class MainActivity : AppCompatActivity() {
                 return true
             }
         }
+
+
         //other webView options
         binding.contentMain.webView.settings.javaScriptEnabled = true
+        binding.contentMain.webView.settings.allowFileAccess = true
+        binding.contentMain.webView.settings.cacheMode  //new added
+        binding.contentMain.webView.settings.allowContentAccess  //new added
 
         //opther webView options
         binding.contentMain.webView.settings.loadWithOverviewMode = true
@@ -229,7 +273,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         this.doubleBackToExitPressedOnce = true
-        Toast.makeText(this, "klik 2 kali untuk keluar", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "klik sekali lagi untuk keluar", Toast.LENGTH_SHORT).show()
 
         Handler(Looper.getMainLooper()).postDelayed(kotlinx.coroutines.Runnable {
             doubleBackToExitPressedOnce = false
@@ -237,3 +281,4 @@ class MainActivity : AppCompatActivity() {
     }
 
 }
+
