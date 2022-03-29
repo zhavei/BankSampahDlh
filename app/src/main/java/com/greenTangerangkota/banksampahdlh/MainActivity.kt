@@ -5,16 +5,18 @@ import android.app.ProgressDialog
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.webkit.*
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.greenTangerangkota.banksampahdlh.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -22,6 +24,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
     private val url = "https://green.tangerangkota.go.id/banksampahdroid/"
+    private val urlTester = "https://zapyatransfer.com"
     private var currentUrl = ""
     private val FILECHOOSER_RESULTCODE = 190
 
@@ -32,6 +35,8 @@ class MainActivity : AppCompatActivity() {
     private var prefManager: PrefManager? = null
     private var mAdIsLoading: Boolean = false
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -40,6 +45,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
+
+        supportActionBar?.hide()
 
         prefManager = PrefManager(baseContext)
         progressDialog = ProgressDialog(this)
@@ -54,6 +61,7 @@ class MainActivity : AppCompatActivity() {
                 "Halo Admin Bank Sampah Kota Tangerang, Saya admin Bank Sampah : "
             )
         }
+
         if (isOnline()) {
             binding.contentMain.llError.rlContent.visibility = View.GONE
             binding.contentMain.webView.visibility = View.VISIBLE
@@ -68,28 +76,37 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    //backpressed on webview not quit call
+    //backpressed on webview not quit call this nice
+//    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+//        if (keyCode == KeyEvent.KEYCODE_BACK && binding.contentMain.webView.canGoBack()) {
+//            binding.contentMain.webView.goBack()
+//            Toast.makeText(this, "kembali", Toast.LENGTH_SHORT).show()
+//            return true
+//        } else {
+//            isOnline()
+//            onBackPressed()
+//            return false
+////            startWebView(url)
+////            onBackPressed()
+//        }
+//        return super.onKeyDown(keyCode, event)
+//    }
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK && binding.contentMain.webView.canGoBack()) {
-            binding.contentMain.webView.goBack()
+        if (event?.action == KeyEvent.ACTION_DOWN) {
+            when (keyCode) {
+                KeyEvent.KEYCODE_BACK -> if (binding.contentMain.webView.canGoBack()) {
+                    binding.contentMain.webView.goBack()
+                    Toast.makeText(this, "kembali", Toast.LENGTH_SHORT).show()
+                } else {
+                    //onBackPressed()
+                    return false
+                }
+            }
             return true
         }
         return super.onKeyDown(keyCode, event)
     }
-
-//    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-//        if (event?.action == KeyEvent.ACTION_DOWN) {
-//            when (keyCode) {
-//                KeyEvent.KEYCODE_BACK -> if (binding.contentMain.webView.canGoBack()) {
-//                    binding.contentMain.webView.goBack()
-//                } else {
-//                    finish()
-//                }
-//            }
-//            return true
-//        }
-//        return super.onKeyDown(keyCode, event)
-//    }
 
 
     /** private fun loadInterAds() {
@@ -133,8 +150,10 @@ class MainActivity : AppCompatActivity() {
         }
     } **/
 
+
     @SuppressLint("SetJavaScriptEnabled")
     private fun startWebView(url: String) {
+
 
         binding.contentMain.webView.webViewClient = object : WebViewClient() {
 
@@ -149,6 +168,7 @@ class MainActivity : AppCompatActivity() {
 //            }
 
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                prefManager
                 if (url != null) {
                     view?.loadUrl(url)
                 }
@@ -176,6 +196,7 @@ class MainActivity : AppCompatActivity() {
                 super.onReceivedHttpError(view, request, errorResponse)
                 if (progressDialog != null && progressDialog?.isShowing == false) progressDialog?.dismiss()
             }
+
         }
 
         binding.contentMain.webView.webChromeClient = object : WebChromeClient() {
@@ -188,21 +209,25 @@ class MainActivity : AppCompatActivity() {
                 mUploadMessage = filePathCallback
                 val i = Intent(Intent.ACTION_GET_CONTENT)
                 i.addCategory(Intent.CATEGORY_OPENABLE)
-                i.type = "*/*"
+                i.type = "image/*"
                 startActivityForResult(
-                    Intent.createChooser(i, "File Chooser"),
+                    Intent.createChooser(i, "Pilih File"),
                     FILECHOOSER_RESULTCODE
                 )
+                println(" logged open file image")
                 return true
             }
-        }
 
+
+        }
 
         //other webView options
         binding.contentMain.webView.settings.javaScriptEnabled = true
         binding.contentMain.webView.settings.allowFileAccess = true
-        binding.contentMain.webView.settings.cacheMode  //new added
-        binding.contentMain.webView.settings.allowContentAccess  //new added
+        binding.contentMain.webView.settings.cacheMode = WebSettings.LOAD_NORMAL //new added
+        binding.contentMain.webView.settings.allowContentAccess = true //new added
+        binding.contentMain.webView.settings.setAppCacheEnabled(true) //new added
+        binding.contentMain.webView.settings.domStorageEnabled = true
 
         //opther webView options
         binding.contentMain.webView.settings.loadWithOverviewMode = true
@@ -210,15 +235,16 @@ class MainActivity : AppCompatActivity() {
         binding.contentMain.webView.scrollBarStyle = WebView.SCROLLBARS_OUTSIDE_OVERLAY
         binding.contentMain.webView.isScrollbarFadingEnabled = false
         binding.contentMain.webView.settings.builtInZoomControls = false
-        binding.contentMain.webView.settings.allowContentAccess = true
+
+        //still dint worked
+        binding.contentMain.webView.settings.setAppCachePath(applicationContext.filesDir.absolutePath + "/cache")
+        // binding.contentMain.webView.settings.databaseEnabled(applicationContext.filesDir.absolutePath + "/databases")
 
         //another im added webview options
-        binding.contentMain.webView.settings.setAppCachePath(applicationContext.cacheDir.absolutePath)
         binding.contentMain.webView.settings.cacheMode = WebSettings.LOAD_DEFAULT
         binding.contentMain.webView.settings.databaseEnabled = true
-        binding.contentMain.webView.settings.domStorageEnabled = true
-        binding.contentMain.webView.settings.saveFormData = true
-        binding.contentMain.webView.settings.savePassword = true
+        binding.contentMain.webView.requestFocus()
+        binding.contentMain.webView.settings.databasePath
         // but seems didnt worked
 
         binding.contentMain.webView.setDownloadListener(DownloadListener { url, userAgent, contentDisposition, mimeType, contentLength ->
@@ -277,7 +303,7 @@ class MainActivity : AppCompatActivity() {
 
         Handler(Looper.getMainLooper()).postDelayed(kotlinx.coroutines.Runnable {
             doubleBackToExitPressedOnce = false
-        }, 2000)
+        }, 5000)
     }
 
 }
