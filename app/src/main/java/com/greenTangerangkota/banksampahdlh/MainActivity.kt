@@ -9,7 +9,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.webkit.*
@@ -97,6 +96,10 @@ class MainActivity : AppCompatActivity() {
             when (keyCode) {
                 KeyEvent.KEYCODE_BACK -> if (binding.contentMain.webView.canGoBack()) {
                     binding.contentMain.webView.goBack()
+                    //progress dialog didnt showing
+                    if (progressDialog != null && progressDialog?.isShowing == true)
+                        progressDialog?.dismiss()
+
                     Toast.makeText(this, "kembali", Toast.LENGTH_SHORT).show()
                 } else {
                     //onBackPressed()
@@ -168,7 +171,7 @@ class MainActivity : AppCompatActivity() {
 //            }
 
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                prefManager
+                prefManager?.editor
                 if (url != null) {
                     view?.loadUrl(url)
                 }
@@ -215,8 +218,14 @@ class MainActivity : AppCompatActivity() {
                     FILECHOOSER_RESULTCODE
                 )
                 println(" logged open file image")
+                onResume()
                 return true
+
+                //val pictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+
             }
+
+
 
 
         }
@@ -245,6 +254,7 @@ class MainActivity : AppCompatActivity() {
         binding.contentMain.webView.settings.databaseEnabled = true
         binding.contentMain.webView.requestFocus()
         binding.contentMain.webView.settings.databasePath
+        binding.contentMain.webView.settings.pluginState = WebSettings.PluginState.OFF
         // but seems didnt worked
 
         binding.contentMain.webView.setDownloadListener(DownloadListener { url, userAgent, contentDisposition, mimeType, contentLength ->
@@ -266,12 +276,12 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         super.onActivityResult(requestCode, resultCode, intent)
         if (requestCode == FILECHOOSER_RESULTCODE) {
-            if (null == mUploadMessage || intent == null || resultCode != RESULT_OK) {
-                return
-            }
+           if (null == mUploadMessage || intent == null || resultCode != RESULT_OK) {
+               return
+           }
             val dataString = intent.dataString
-            mUploadMessage!!.onReceiveValue(arrayOf(Uri.parse(dataString)))
-            mUploadMessage = null
+           mUploadMessage!!.onReceiveValue(arrayOf(Uri.parse(dataString)))
+           mUploadMessage = null
         }
     }
 
